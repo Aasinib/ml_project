@@ -2,6 +2,10 @@ import streamlit as st
 import numpy as np
 import joblib
 from auth import *
+from database import init_db
+
+init_db()   
+
 
 st.set_page_config(page_title="Student Performance Prediction", layout="centered")
 
@@ -107,4 +111,5 @@ if st.session_state.user:
         preds = get_all_predictions()
         for p in preds:
             st.write(f"👤 {p[0]} | 🎯 {p[1]:.2f} | 🕒 {p[2]}")
+
 
