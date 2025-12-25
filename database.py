@@ -1,45 +1,44 @@
 import sqlite3
-import hashlib
 import os
+from auth import hash_pw
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "student_app.db")
+DB_PATH = "student_app.db"
 
-def hash_pw(p):
-    return hashlib.sha256(p.encode()).hexdigest()
+def init_db():
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
 
-conn = sqlite3.connect(DB_PATH)
-cur = conn.cursor()
+    # Create users table
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE,
+        password TEXT,
+        role TEXT
+    )
+    """)
 
-# USERS TABLE
-cur.execute("""
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE,
-    password TEXT,
-    role TEXT
-)
-""")
+    # Create predictions table
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS predictions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT,
+        study_hours REAL,
+        attendance REAL,
+        participation REAL,
+        predicted_score REAL,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
 
-# PREDICTIONS TABLE
-cur.execute("""
-CREATE TABLE IF NOT EXISTS predictions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT,
-    study_hours REAL,
-    attendance REAL,
-    participation REAL,
-    predicted_score REAL,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-)
-""")
+    # Insert default admin if not exists
+    cur.execute("SELECT * FROM users WHERE username=?", ("aasini",))
+    if not cur.fetchone():
+        cur.execute(
+            "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
+            ("aasini", hash_pw("admin123"), "admin")
+        )
 
-# CREATE ADMIN (FORCE)
-cur.execute("""
-INSERT OR IGNORE INTO users (username, password, role)
-VALUES (?, ?, ?)
-""", ("aasini", hash_pw("admin123"), "admin"))
+    conn.commit()
+    conn.close()
 
-conn.commit()
-conn.close()
-
-print("Database initialized successfully")
