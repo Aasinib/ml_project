@@ -5,7 +5,8 @@ from auth import *
 
 st.set_page_config(page_title="Student Performance Prediction", layout="centered")
 
-model = joblib.load("model/student_performance_model.pkl")
+model = joblib.load("student_performance_model.pkl")
+
 
 # ---------- SESSION ----------
 if "user" not in st.session_state:
@@ -106,3 +107,4 @@ if st.session_state.user:
         preds = get_all_predictions()
         for p in preds:
             st.write(f"👤 {p[0]} | 🎯 {p[1]:.2f} | 🕒 {p[2]}")
+
